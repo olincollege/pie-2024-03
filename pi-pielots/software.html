@@ -50,7 +50,7 @@
 								<article class="box post">                            
 									<header class="style1">
 										<p style="color:white";>
-                                                All code can be Found at Our GitHub: 
+                                                All code can be found on our GitHub: 
                                                 <a href="https://github.com/Rshah2067/Thorondor" target="_blank">
                                                     <i class="fab fa-github"></i>
                                                 </a>
@@ -85,24 +85,29 @@
                                                 Image source: <a href="https://x-io.co.uk/downloads/madgwick_internal_report.pdf" target="_blank" style="color:#0062ff; text-decoration: none;">https://x-io.co.uk/downloads/madgwick_internal_report.pdf</a>
                                             </p>
                                         </caption>
-										<p style="color:white">
-                                            Raw IMU data in itself can be noisy and unreliable, making it unpractical to work with. A solution to this is sensor fusion, such as a complimentary filter, 
-                                            which combines two different sensor data sources, typically accelerometer and gyroscope, to estimate orientation or angles. It blends the high-pass filtered
-                                             gyroscope data with the low-pass filtered accelerometer data, providing a more accurate and reliable result than either sensor alone. However, with its
-                                              simplicity comes with some problems, such as noise sensitivity and gyroscope drift, which makes it less than ideal for our application. 
-                                        </p>
-                                        <p style="color:white">
-                                            On the other hand, The Madgwick filter employs a quaternion representation of orientation to describe the nature of orientations in three-dimensions and is 
-                                            not subject to the singularities associated with an Euler angle representation, allowing accelerometer and magnetometer data to be used in an analytically 
-                                            derived and optimized gradient-descent algorithm to compute the direction of the gyroscope measurement error as a quaternion derivative. Its advantages over 
-                                            the complimentary filter includes the use of a MARG sensor array, consisting of a magnetometer, accelerometer, and gyroscope, reducing drift and providing more 
-                                            precise long-term orientation estimates. Additionally, the gradient descent allows for the algorithm to constantly try to converge on the best 
-                                            solution that minimizes estimation differences from the accelerometer and magnetometer, increasing reliability. Since now we have reliable orientation data, 
-                                            we can then feed it into our control algorithm to generate responses attempting to stabilize the aircraft 
-                                        </p>
+						<p style="color:white">
+							In order for our bi-copter to be stabilized in the first place, it needs to know its orientation. This is the purpose of our 9-axis inertial measurement unit (IMU), which
+							consists of an accelerometer, gyroscope, and magnetometer. In the real world, unprocessed IMU data is unreliable, with issues such as noise and drift, making it unpractical to 
+							work with. A solution to this is sensor fusion by algorithm, such as using a complimentary filter. A complimentary filter is a simple method that combines accelerometer
+							and gyroscope data to estimate orientation. It does this by blending high-pass filtered gyroscope data with low-pass filtered accelerometer data using a single weight 
+							coefficient, providing a more accurate and reliable result than either sensor would individually. However, with its simplicity comes with some problems, a major one 
+							being gyroscope drift, which makes it less than ideal for our application. Another algorithm would be the Kalman filter, which estimates the state of a dynamic system by 
+							combining predictions from a mathematical model with noisy measurements, using probabilities to minimize uncertainty and optimally update the state with each new observation.
+							However, it is difficult to implement, requiring a sophisticated model of the system, as well as being computationally expensive, which our microcontroller would not be able
+							to run at a practical speed.
+                                        	</p>
+                                        	<p style="color:white">
+							
+							We ultimately chose to implement the Madgwick filter for orientation estimation. This algorithm employs a quaternion to describe the coupled nature of orientations in three-dimensions and
+							is not subject to the problematic singularities associated with an Euler angle representation. The use of quaternions allows accelerometer and magnetometer data to be used in an analytically 
+							derived and optimized gradient-descent algorithm to compute the direction of the gyroscope measurement error as a quaternion derivative, allowing for the estimated angular rate of 
+							change to be more accurate, leading to more accurate orientation estimations once integrated. Its main advantages over previously mentioned filtering algorithms is that it is easy to implement,
+							only requiring a single tunable parameter for optimal performance, produces reliable orientation estimations, has inherent gyroscopic drift compensation due to constant corrections, and is computationally cheap. 
+							With this reliable orientation data, our control loop is now able to generate proper motor and servo responses to achiever stabilization.
+                                        	</p>
                                         </header>
 
-							</div>
+					</div>
 
 					</div>
 
@@ -148,9 +153,9 @@
 									<header class="style2">
 										<p style="color:#fff">
                                             We can control our orientation (pitch, yaw, roll) by altering motor speeds and servo angle. Roll is controlled by increasing one motor speed,
-                                             while decreasing the other by the same amount, pitch is controlled by adjusting both servo angles forward or backwards, and yaw is controlled
+                                             while decreasing the other by an equivalent amount, pitch is controlled by adjusting both servo angles forward or backwards, and yaw is controlled
                                               by adjusting both servo angles in opposite directions. In our control algorithm, we focused on stabilizing pitch and roll, as these axis were 
-                                              deemed the most unstable. This is in contrast to yaw, which can easily be adjusted by a human pilot once the aircraft is stabilized in other axes.
+                                              deemed the most unstable. This is in contrast to yaw, which can easily be controlled by a human pilot once the aircraft is stabilized in other axes.
                                         </p>
 									</header>
 
@@ -159,8 +164,8 @@
                                             Our controller uses PID logic for both axes, where our desired state is the angle that is translated from PPM to degrees (taken from the transmitter). 
                                             For example, if the pilot wanted to hover, the desired angle would be 0 degrees in both pitch and roll. If there is error in an axes, 
                                             it gets fed into the PID loop where an output signal is produced to determine motor speed or servo angle necessary to drive the aircraft to the set point 
-                                            orientation. For control mixing, even though the system is very non-linear, we would assume for small corrections in a hover, we would be able to linearly 
-                                            combine pitch and roll corrections together to output. Setting up and running simulations in Simulink was able to prove that this would work well enough for 
+                                            orientation. For control mixing, even though the system is very non-linear, we assumed that for small corrections during a hover, that linearly combining
+					    pitch and roll corrections together would have desirable results. Modeling and simulation in Simulink was able to prove that this would work well enough for 
                                             our case. In order to test this logic we put our Iron Bird prototype into a testing gimble. While this does not perfectly simulate the dynamics of our system
                                             it provided a proof of concept that we could control our system in this way.
                                         </p>
